@@ -61,23 +61,26 @@ Real teams. Real players. Real photos. Real matches. Honest metrics.
 > comparison with real photos, an Elo leaderboard, and a live reliability diagram.
 
 ```text
-                 ┌──────────────┐   real CS2 data    ┌──────────────┐
-   PandaScore ──▶│  ingest.py   │──── teams/players ─▶│   SQLite     │
-   (or synth)    │  pandascore  │     photos/matches  │   cs2.db     │
-                 └──────────────┘                     └──────┬───────┘
-                                                             │
-        ┌────────────────────────────────────────────────────┘
-        ▼
- ┌──────────────┐  point-in-time   ┌──────────────┐  calibrated   ┌──────────────┐
- │ features.py  │── 16 features ──▶│ predictor.py │── probs+SHAP ─▶│   api.py     │
- │ (no leakage) │                  │ XGB + Platt  │                │  FastAPI     │
- └──────────────┘                  └──────────────┘                └──────┬───────┘
-                                                                          │ JSON
-                                                                          ▼
-                                                            ┌──────────────────────┐
-                                                            │   Next.js 14 + R3F    │
-                                                            │  the pretty part 🪄   │
-                                                            └──────────────────────┘
+  ───────────────────────────  ①  INGEST  ───────────────────────────
+
+     PandaScore API (real S/A-tier)  ┐
+                                     ├──▶  ingest.py  ──▶  SQLite · cs2.db
+     synthetic simulator (offline)   ┘    · one CLI, idempotent upserts
+                                          · teams · players (+photos) · matches
+
+  ───────────────────────────  ②  TRAIN  ────────────────────────────
+                                                       (offline · leakage-free)
+     cs2.db  ──▶  features.py  ──▶  predictor.py  ──▶  models/
+                  · 16 features, strictly point-in-time (no leakage)
+                  · XGBoost + Platt scaling → calibrated probabilities
+                  · time-split eval vs Elo → metrics.json · reliability.png
+
+  ───────────────────────────  ③  SERVE  ────────────────────────────
+                                                       (online · request-time)
+     models/ + cs2.db  ──▶  api.py (FastAPI)  ──JSON──▶  Next.js 14 + R3F
+                            · /predict → calibrated prob + SHAP        dashboard
+                            · /teams /players /matches /metrics
+                            · gauge · SHAP · Elo board · reliability · 3D hero 🪄
 ```
 
 ---
