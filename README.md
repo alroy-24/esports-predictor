@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎯 CS2 Match Oracle
+# 🎯 Frag Forecast
 
 ### _Calibrated win probabilities for professional Counter-Strike 2 — with a 3D dashboard that has no business being this nice._
 
@@ -18,7 +18,36 @@
 **Scrape → engineer → calibrate → serve → visualize → explain.**
 Real teams. Real players. Real photos. Real matches. Honest metrics.
 
+[**Quickstart**](#-quickstart) · [**API**](#-api-reference) · [**Why it's portfolio-worthy**](#-what-makes-it-portfolio-worthy) · [**Caveats**](#️-honest-caveats)
+
 </div>
+
+---
+
+## 📸 Demo
+
+> _Screenshots live in [`frontend/public/screenshots/`](frontend/public/screenshots/)._
+> Run the stack (see [Quickstart](#-quickstart)), capture the three panels, and drop them in:
+>
+> ```md
+> ![Matchup simulator — gauge + SHAP](frontend/public/screenshots/predict.png)
+> ![Player "tale of the tape"](frontend/public/screenshots/players.png)
+> ![Elo leaderboard + reliability diagram](frontend/public/screenshots/metrics.png)
+> ```
+
+---
+
+## 🧭 Contents
+
+- [⚡ TL;DR](#-tldr) — what this is, in one diagram
+- [🧠 The headline number](#-the-headline-number-kept-honest) — model vs. the Elo baseline
+- [✨ Features](#-features) — the brains 🧮 and the looks 🎨
+- [🏗️ Architecture](#️-architecture--repo-layout) — repo layout
+- [🚀 Quickstart](#-quickstart) — running locally in four steps
+- [🔌 API reference](#-api-reference) — endpoints + a `/predict` example
+- [🛠️ Tech stack](#️-tech-stack)
+- [🔬 Why it's portfolio-worthy](#-what-makes-it-portfolio-worthy)
+- [⚠️ Honest caveats](#️-honest-caveats) · [🗺️ Roadmap](#️-roadmap) · [📄 License](#-license)
 
 ---
 
@@ -175,7 +204,11 @@ npm install
 npm run dev                              # http://localhost:3000
 ```
 
-Open **http://localhost:3000** and start predicting. 🎉
+> The dashboard defaults to the API at `http://localhost:8000`. To point it elsewhere,
+> set `NEXT_PUBLIC_API_URL` in `frontend/.env.local`.
+
+Open **http://localhost:3000** and start predicting. 🎉 If the API isn't up yet, the page
+shows a friendly "Can't reach the API" panel with the exact command to start it.
 
 ---
 

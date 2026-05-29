@@ -1,4 +1,4 @@
-# 🎨 Frontend — CS2 Match Oracle
+# 🎨 Frontend — Frag Forecast
 
 The dashboard. Next.js 14 (App Router) + TypeScript + Tailwind, with an animated
 3D hero, a live matchup simulator, SHAP explanations, a player "tale of the tape"

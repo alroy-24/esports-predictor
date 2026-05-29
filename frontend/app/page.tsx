@@ -180,7 +180,7 @@ function Hero({ teamCount, matchCount }: { teamCount: number; matchCount: number
       >
         <StatChip label="Teams" value={teamCount} />
         <StatChip label="Matches" value={matchCount} suffix="+" />
-        <StatChip label="Features" value={15} />
+        <StatChip label="Features" value={16} />
       </motion.div>
     </section>
   );

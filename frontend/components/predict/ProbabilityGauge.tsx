@@ -119,7 +119,21 @@ function TeamHead({
           {name}
         </div>
       </div>
-      <div className={`font-display text-4xl font-bold sm:text-5xl ${color}`}>
+      <div
+        className={`font-display text-4xl font-bold transition-all sm:text-5xl ${color} ${
+          favorite ? "" : "opacity-70"
+        }`}
+        style={
+          favorite
+            ? {
+                textShadow:
+                  side === "a"
+                    ? "0 0 28px rgba(34,211,238,0.55)"
+                    : "0 0 28px rgba(244,114,182,0.55)",
+              }
+            : undefined
+        }
+      >
         <AnimatedNumber value={pct} decimals={1} suffix="%" />
       </div>
       <div className="font-mono text-xs text-slate-500">

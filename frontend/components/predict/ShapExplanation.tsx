@@ -23,7 +23,7 @@ export function ShapExplanation({ items }: { items: ShapItem[] }) {
         </span>
         <span className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-teamB" /> favors {/* B */}B
+            <span className="h-2 w-2 rounded-full bg-teamB" /> favors B
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-teamA" /> favors A

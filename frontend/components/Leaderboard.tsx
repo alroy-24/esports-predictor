@@ -17,6 +17,14 @@ export function Leaderboard({ teams, limit = 12 }: { teams: Team[]; limit?: numb
   const min = Math.min(...ranked.map((t) => t.elo));
   const span = Math.max(max - min, 1);
 
+  // Podium colors for the top three ranks: gold / silver / bronze.
+  const medal = ["text-amber-300", "text-slate-200", "text-amber-600"];
+  const medalBar = [
+    "bg-gradient-to-r from-amber-300 to-teamA",
+    "bg-gradient-to-r from-slate-300 to-teamA",
+    "bg-gradient-to-r from-amber-600 to-teamA",
+  ];
+
   return (
     <ol className="space-y-2">
       {ranked.map((t, i) => {
@@ -34,7 +42,7 @@ export function Leaderboard({ teams, limit = 12 }: { teams: Team[]; limit?: numb
             <span
               className={cn(
                 "w-6 text-center font-mono text-sm",
-                top3 ? "font-bold text-accent" : "text-slate-500"
+                top3 ? cn("font-bold", medal[i]) : "text-slate-500"
               )}
             >
               {i + 1}
@@ -64,9 +72,7 @@ export function Leaderboard({ teams, limit = 12 }: { teams: Team[]; limit?: numb
                 <motion.div
                   className={cn(
                     "h-full rounded-full",
-                    top3
-                      ? "bg-gradient-to-r from-accent to-teamA"
-                      : "bg-gradient-to-r from-slate-600 to-slate-400"
+                    top3 ? medalBar[i] : "bg-gradient-to-r from-slate-600 to-slate-400"
                   )}
                   initial={{ width: 0 }}
                   whileInView={{ width: `${frac * 100}%` }}

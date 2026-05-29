@@ -23,7 +23,7 @@ export function Header({ health }: { health: Health | null }) {
           </div>
           <div className="leading-tight">
             <p className="font-display text-sm font-bold tracking-tight text-white">
-              CS2 <span className="gradient-text">Predictor</span>
+              Frag <span className="gradient-text">Forecast</span>
             </p>
             <p className="text-[0.65rem] text-slate-500">
               Calibrated XGBoost · live dashboard

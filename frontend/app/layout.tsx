@@ -18,9 +18,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CS2 Match Predictor",
+  title: "Frag Forecast",
   description:
-    "Calibrated XGBoost predictions for professional Counter-Strike 2 matches, with Elo ratings, SHAP explanations, and a live results feed.",
+    "Frag Forecast — calibrated XGBoost predictions for professional Counter-Strike 2 matches, with Elo ratings, SHAP explanations, and a live results feed.",
 };
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-# ⚙️ Backend — CS2 Match Oracle
+# ⚙️ Backend — Frag Forecast
 
 FastAPI service + ML pipeline that turns raw CS2 match data into **calibrated**
 win probabilities with **SHAP** explanations. Pure Python, SQLite by default,
