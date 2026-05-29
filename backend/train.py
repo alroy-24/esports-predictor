@@ -19,7 +19,9 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import json
 import os
+from datetime import datetime, timezone
 
 import numpy as np
 import pandas as pd
@@ -89,6 +91,52 @@ def _reliability_plot(y_true, p, out_path: str) -> None:
     print(f"[plot] wrote reliability diagram -> {out_path}")
 
 
+def write_metrics(
+    out_dir: str,
+    *,
+    model: dict,
+    baseline: dict,
+    y_test,
+    p_model,
+    n_train: int,
+    n_test: int,
+    n_matches: int,
+) -> None:
+    """Persist metrics + a reliability curve as JSON for the API/dashboard."""
+    reliability: list[dict] = []
+    try:
+        from sklearn.calibration import calibration_curve
+
+        frac_pos, mean_pred = calibration_curve(
+            y_test, p_model, n_bins=10, strategy="quantile"
+        )
+        reliability = [
+            {"pred": round(float(p), 4), "obs": round(float(o), 4)}
+            for p, o in zip(mean_pred, frac_pos)
+        ]
+    except Exception as exc:  # noqa: BLE001
+        print(f"[metrics] could not compute reliability curve: {exc}")
+
+    payload = {
+        "model": model,
+        "baseline": baseline,
+        "reliability": reliability,
+        "n_train": n_train,
+        "n_test": n_test,
+        "n_matches": n_matches,
+        "n_features": len(FEATURE_COLUMNS),
+        "trained_at": datetime.now(timezone.utc)
+        .replace(microsecond=0, tzinfo=None)
+        .isoformat()
+        + "Z",
+    }
+    path = os.path.join(out_dir or ".", "metrics.json")
+    os.makedirs(out_dir or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+    print(f"[metrics] wrote {path}")
+
+
 def update_team_elo(session: Session) -> None:
     """Persist final point-in-time Elo onto each team (for the dashboard)."""
     builder = fit_builder(session)
@@ -106,7 +154,15 @@ def main() -> None:
         default=os.getenv("MODEL_PATH", "./models/xgb_calibrated.joblib"),
     )
     parser.add_argument("--no-plot", action="store_true")
-    parser.add_argument("--calibration", default="isotonic", choices=["isotonic", "sigmoid"])
+    # Sigmoid (Platt) is the safer default on modest real datasets; isotonic
+    # tends to overfit a small calibration slice.
+    parser.add_argument("--calibration", default="sigmoid", choices=["isotonic", "sigmoid"])
+    parser.add_argument(
+        "--min-history",
+        type=int,
+        default=0,
+        help="train/eval only on matches where both teams have >= N prior matches",
+    )
     args = parser.parse_args()
 
     engine = init_db()
@@ -118,6 +174,17 @@ def main() -> None:
                 f"Only {len(df)} matches in DB — run `python ingest.py seed` first."
             )
         print(f"[train] {len(df)} matches, {len(FEATURE_COLUMNS)} features.")
+
+        if args.min_history > 0:
+            before = len(df)
+            df = df[
+                (df["matches_played_a"] >= args.min_history)
+                & (df["matches_played_b"] >= args.min_history)
+            ].reset_index(drop=True)
+            print(
+                f"[train] min-history>={args.min_history}: kept {len(df)}/{before} matches "
+                "(both teams have enough prior games)."
+            )
 
         train_df, cal_df, test_df = time_split(df)
         print(
@@ -136,12 +203,26 @@ def main() -> None:
         p_elo = test_df["elo_expected_a"].to_numpy()
         y_test = test_df["target"].to_numpy()
 
+        baseline_metrics = _metrics(y_test, p_elo)
+        model_metrics = _metrics(y_test, p_model)
         print("\n=== Test-set performance ===")
-        _print_metrics("Elo baseline", _metrics(y_test, p_elo))
-        _print_metrics("XGBoost (calibrated)", _metrics(y_test, p_model))
+        _print_metrics("Elo baseline", baseline_metrics)
+        _print_metrics("XGBoost (calibrated)", model_metrics)
 
         predictor.save(args.out)
         print(f"\n[train] saved model -> {args.out}")
+
+        out_dir = os.path.dirname(args.out) or "."
+        write_metrics(
+            out_dir,
+            model=model_metrics,
+            baseline=baseline_metrics,
+            y_test=y_test,
+            p_model=p_model,
+            n_train=len(train_df),
+            n_test=len(test_df),
+            n_matches=len(df),
+        )
 
         if not args.no_plot:
             _reliability_plot(

@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-950 text-slate-200 antialiased;
+  background-image: radial-gradient(
+    1200px 800px at 50% -10%,
+    rgba(99, 102, 241, 0.12),
+    transparent 60%
+  );
+}
+
+@layer components {
+  /* Frosted-glass card surface used throughout the dashboard. */
+  .glass {
+    @apply rounded-3xl border border-white/10 bg-white/[0.035] shadow-glass backdrop-blur-xl;
+  }
+
+  .glass-soft {
+    @apply rounded-2xl border border-white/[0.07] bg-white/[0.025] backdrop-blur-md;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-teamA via-accent to-teamB bg-clip-text text-transparent;
+  }
+
+  /* Hairline label used above sections. */
+  .eyebrow {
+    @apply text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-slate-400;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* A faint scanline / grid texture for backgrounds. */
+  .bg-grid {
+    background-image: theme("backgroundImage.grid-fade");
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+}
+
+/* Slim, themed scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

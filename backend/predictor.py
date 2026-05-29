@@ -32,13 +32,16 @@ class Predictor:
     feature_columns: list[str] = field(default_factory=lambda: list(FEATURE_COLUMNS))
     params: dict[str, Any] = field(
         default_factory=lambda: dict(
-            n_estimators=400,
-            max_depth=4,
-            learning_rate=0.03,
+            # Deliberately conservative: on real match data the Elo baseline is
+            # strong and the dataset is modest, so shallow, well-regularized
+            # trees generalize better than a deep ensemble that overfits.
+            n_estimators=250,
+            max_depth=3,
+            learning_rate=0.04,
             subsample=0.8,
             colsample_bytree=0.8,
-            min_child_weight=3,
-            reg_lambda=1.0,
+            min_child_weight=5,
+            reg_lambda=2.0,
             objective="binary:logistic",
             eval_metric="logloss",
             n_jobs=-1,

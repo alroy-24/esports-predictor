@@ -13,6 +13,7 @@ Run::
 
 from __future__ import annotations
 
+import json
 import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -28,11 +29,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from db import Match, Team, init_db
+from db import Match, Player, Team, init_db
 from features import FeatureBuilder, fit_builder
 from predictor import Predictor
 
 MODEL_PATH = os.getenv("MODEL_PATH", "./models/xgb_calibrated.joblib")
+METRICS_PATH = os.path.join(os.path.dirname(MODEL_PATH) or ".", "metrics.json")
 
 
 class AppState:
@@ -108,6 +110,38 @@ class TeamOut(BaseModel):
     name: str
     region: str | None
     elo: float
+    logo_url: str | None = None
+    acronym: str | None = None
+
+
+class PlayerOut(BaseModel):
+    id: int
+    nickname: str
+    name: str | None
+    team: str
+    role: str | None
+    nationality: str | None
+    photo_url: str | None
+    age: int | None
+    # Per-player performance stats are nullable: real providers don't always
+    # expose them (PandaScore's free tier doesn't), and we never fabricate.
+    rating: float | None
+    kd: float | None
+    adr: float | None
+    kast: float | None
+    hs_pct: float | None
+    maps_played: int | None
+
+
+class TeamStats(BaseModel):
+    name: str
+    region: str | None
+    elo: float
+    form: float
+    winrate_30d: float
+    winrate_90d: float
+    rest_days: float
+    matches_played: float
 
 
 class MatchOut(BaseModel):
@@ -142,8 +176,77 @@ def list_teams() -> list[TeamOut]:
     with Session(state.engine) as session:
         teams = session.execute(select(Team).order_by(Team.elo.desc())).scalars()
         return [
-            TeamOut(id=t.id, name=t.name, region=t.region, elo=t.elo) for t in teams
+            TeamOut(
+                id=t.id, name=t.name, region=t.region, elo=t.elo,
+                logo_url=t.logo_url, acronym=t.acronym,
+            )
+            for t in teams
         ]
+
+
+def _player_out(p: Player, team_name: str) -> PlayerOut:
+    return PlayerOut(
+        id=p.id,
+        nickname=p.nickname,
+        name=p.name,
+        team=team_name,
+        role=p.role,
+        nationality=p.nationality,
+        photo_url=p.photo_url,
+        age=p.age,
+        rating=p.rating,
+        kd=p.kd,
+        adr=p.adr,
+        kast=p.kast,
+        hs_pct=p.hs_pct,
+        maps_played=p.maps_played,
+    )
+
+
+@app.get("/players", response_model=list[PlayerOut])
+def list_players() -> list[PlayerOut]:
+    """All players with their team name — powers the compare picker."""
+    with Session(state.engine) as session:
+        names = {t.id: t.name for t in session.execute(select(Team)).scalars()}
+        rows = session.execute(
+            select(Player).order_by(Player.rating.desc())
+        ).scalars()
+        return [_player_out(p, names.get(p.team_id, "?")) for p in rows]
+
+
+@app.get("/teams/{name}/players", response_model=list[PlayerOut])
+def team_players(name: str) -> list[PlayerOut]:
+    with Session(state.engine) as session:
+        team = session.execute(
+            select(Team).where(Team.name.ilike(name))
+        ).scalar_one_or_none()
+        if team is None:
+            raise HTTPException(404, f"Unknown team: {name!r}")
+        rows = session.execute(
+            select(Player).where(Player.team_id == team.id).order_by(Player.rating.desc())
+        ).scalars()
+        return [_player_out(p, team.name) for p in rows]
+
+
+@app.get("/teams/{name}/stats", response_model=TeamStats)
+def team_stats(name: str) -> TeamStats:
+    """Current rolling profile for one team, used by the compare radar."""
+    if state.builder is None:
+        raise HTTPException(503, "No match history loaded.")
+    team = state.teams_by_name.get(name.lower())
+    if team is None:
+        raise HTTPException(404, f"Unknown team: {name!r}")
+    profile = state.builder.team_profile(team.id, _utcnow())
+    return TeamStats(name=team.name, region=team.region, **profile)
+
+
+@app.get("/metrics")
+def metrics() -> dict:
+    """Serve the metrics.json written by train.py (model vs. baseline)."""
+    if not os.path.exists(METRICS_PATH):
+        raise HTTPException(404, "No metrics yet. Run train.py first.")
+    with open(METRICS_PATH, encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 @app.get("/matches", response_model=list[MatchOut])

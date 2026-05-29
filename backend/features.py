@@ -41,6 +41,7 @@ FEATURE_COLUMNS = [
     "winrate_30d_diff",
     "winrate_90d_diff",
     "form_diff",
+    "map_margin_form_diff",
     "h2h_diff",
     "rest_days_a",
     "rest_days_b",
@@ -60,7 +61,9 @@ class _TeamState:
     elo: float = DEFAULT_RATING
     last_played: datetime | None = None
     n_matches: int = 0
-    # (played_at, won) capped to the longest window we care about.
+    # (played_at, won, map_margin) capped to the longest window we care about.
+    # map_margin is this team's map score minus the opponent's (e.g. a 2-1
+    # bo3 win is +1, a 0-2 loss is -2) — a "quality of result" signal.
     history: deque = field(default_factory=lambda: deque(maxlen=400))
 
 
@@ -77,7 +80,7 @@ class FeatureBuilder:
 
     def _winrate(self, st: _TeamState, asof: datetime, window_days: int) -> float:
         wins = total = 0
-        for played_at, won in st.history:
+        for played_at, won, _margin in st.history:
             age = (asof - played_at).total_seconds() / 86400.0
             if 0 <= age <= window_days:
                 total += 1
@@ -87,7 +90,7 @@ class FeatureBuilder:
     def _form(self, st: _TeamState, asof: datetime) -> float:
         """Recency-weighted win share; exponential decay by half-life."""
         num = den = 0.0
-        for played_at, won in st.history:
+        for played_at, won, _margin in st.history:
             age = (asof - played_at).total_seconds() / 86400.0
             if age < 0:
                 continue
@@ -95,6 +98,18 @@ class FeatureBuilder:
             num += w * (1.0 if won else 0.0)
             den += w
         return num / den if den else 0.5
+
+    def _map_margin_form(self, st: _TeamState, asof: datetime) -> float:
+        """Recency-weighted average map-score margin (quality of recent results)."""
+        num = den = 0.0
+        for played_at, _won, margin in st.history:
+            age = (asof - played_at).total_seconds() / 86400.0
+            if age < 0:
+                continue
+            w = 0.5 ** (age / FORM_HALFLIFE_DAYS)
+            num += w * margin
+            den += w
+        return num / den if den else 0.0
 
     def _rest_days(self, st: _TeamState, asof: datetime) -> float:
         if st.last_played is None:
@@ -121,6 +136,8 @@ class FeatureBuilder:
             "elo_diff": sa.elo - sb.elo,
             "elo_expected_a": expected_score(sa.elo, sb.elo),
             "form_diff": self._form(sa, played_at) - self._form(sb, played_at),
+            "map_margin_form_diff": self._map_margin_form(sa, played_at)
+            - self._map_margin_form(sb, played_at),
             "h2h_diff": float(
                 self.h2h[(team_a_id, team_b_id)] - self.h2h[(team_b_id, team_a_id)]
             ),
@@ -139,6 +156,18 @@ class FeatureBuilder:
             )
         return row
 
+    def team_profile(self, team_id: int, asof: datetime) -> dict[str, float]:
+        """Current rolling snapshot for one team (powers the compare radar)."""
+        st = self.state[team_id]
+        return {
+            "elo": round(st.elo, 1),
+            "form": round(self._form(st, asof), 4),
+            "winrate_30d": round(self._winrate(st, asof, 30), 4),
+            "winrate_90d": round(self._winrate(st, asof, 90), 4),
+            "rest_days": round(self._rest_days(st, asof), 2),
+            "matches_played": float(st.n_matches),
+        }
+
     def observe(
         self,
         team_a_id: int,
@@ -148,6 +177,8 @@ class FeatureBuilder:
         *,
         is_lan: bool = False,
         is_major: bool = False,
+        score_a: int | None = None,
+        score_b: int | None = None,
     ) -> None:
         """Fold a finished match into the rolling state."""
         sa, sb = self.state[team_a_id], self.state[team_b_id]
@@ -156,8 +187,14 @@ class FeatureBuilder:
         k = self.cfg.k_for(is_lan=is_lan, is_major=is_major)
         sa.elo, sb.elo = elo_update(sa.elo, sb.elo, 1.0 if a_won else 0.0, k=k)
 
-        sa.history.append((played_at, a_won))
-        sb.history.append((played_at, not a_won))
+        # Map margin from A's perspective; fall back to +/-1 if scores unknown.
+        if score_a is not None and score_b is not None:
+            margin_a = float(score_a - score_b)
+        else:
+            margin_a = 1.0 if a_won else -1.0
+
+        sa.history.append((played_at, a_won, margin_a))
+        sb.history.append((played_at, not a_won, -margin_a))
         sa.last_played = sb.last_played = played_at
         sa.n_matches += 1
         sb.n_matches += 1
@@ -206,6 +243,8 @@ def build_feature_table(session: Session) -> pd.DataFrame:
             m.played_at,
             is_lan=m.is_lan,
             is_major=m.is_major,
+            score_a=m.score_a,
+            score_b=m.score_b,
         )
 
     df = pd.DataFrame(rows)
@@ -225,5 +264,6 @@ def fit_builder(session: Session) -> FeatureBuilder:
         builder.observe(
             m.team_a_id, m.team_b_id, m.winner, m.played_at,
             is_lan=m.is_lan, is_major=m.is_major,
+            score_a=m.score_a, score_b=m.score_b,
         )
     return builder
