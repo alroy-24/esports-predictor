@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="'Segoe UI', Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a12"/>
+      <stop offset="1" stop-color="#0d0a18"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#e879f9"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#8b7cff"/>
+    </marker>
+    <style>
+      .title  { fill:#f8fafc; font-size:21px; font-weight:700; }
+      .sub    { fill:#8b8b9e; font-size:13px; }
+      .phase  { font-size:13px; font-weight:700; letter-spacing:.12em; }
+      .bt     { font-size:15px; font-weight:600; fill:#f1f5f9; text-anchor:middle; }
+      .bs     { font-size:11px; fill:#8b8b9e; text-anchor:middle; }
+      .edge   { stroke:#8b7cff; stroke-width:1.6; fill:none; }
+      .elabel { fill:#a78bfa; font-size:10.5px; font-style:italic; }
+      .box    { fill:#15151f; stroke:#2c2c40; stroke-width:1.5; }
+      .group  { fill:#7c5cff; opacity:.045; stroke:#ffffff14; stroke-width:1; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="560" fill="url(#bg)"/>
+
+  <!-- header -->
+  <text x="40" y="44" class="title">Frag Forecast — <tspan fill="url(#accent)">system architecture</tspan></text>
+  <text x="40" y="62" class="sub">offline build  →  online serve</text>
+
+  <!-- group bands -->
+  <rect x="24" y="74" width="852" height="162" rx="14" class="group"/>
+  <rect x="24" y="276" width="852" height="96"  rx="14" class="group"/>
+  <rect x="24" y="446" width="852" height="96"  rx="14" class="group"/>
+
+  <!-- phase labels -->
+  <text x="40" y="98"  class="phase" fill="#22d3ee">①  INGEST</text>
+  <text x="40" y="300" class="phase" fill="#a78bfa">②  TRAIN  ·  offline, leakage-free</text>
+  <text x="40" y="470" class="phase" fill="#34d399">③  SERVE  ·  online, request-time</text>
+
+  <!-- ===== BAND 1: INGEST ===== -->
+  <rect x="150" y="110" width="176" height="52" rx="11" class="box"/>
+  <text x="238" y="132" class="bt">PandaScore API</text>
+  <text x="238" y="149" class="bs">real · S/A-tier</text>
+
+  <rect x="150" y="176" width="176" height="52" rx="11" class="box"/>
+  <text x="238" y="198" class="bt">Synthetic sim</text>
+  <text x="238" y="215" class="bs">fully offline</text>
+
+  <rect x="404" y="143" width="150" height="52" rx="11" class="box"/>
+  <text x="479" y="165" class="bt">ingest.py</text>
+  <text x="479" y="182" class="bs">one CLI · idempotent</text>
+
+  <rect x="648" y="143" width="180" height="52" rx="11" class="box"/>
+  <text x="738" y="165" class="bt">SQLite · cs2.db</text>
+  <text x="738" y="182" class="bs">teams · players · matches</text>
+
+  <path class="edge" d="M326,136 L402,162" marker-end="url(#arrow)"/>
+  <path class="edge" d="M326,202 L402,176" marker-end="url(#arrow)"/>
+  <path class="edge" d="M554,169 L646,169" marker-end="url(#arrow)"/>
+
+  <!-- band1 -> band2 -->
+  <path class="edge" d="M738,195 L738,312" marker-end="url(#arrow)"/>
+  <text x="746" y="258" class="elabel">replay history</text>
+
+  <!-- ===== BAND 2: TRAIN (right -> left) ===== -->
+  <rect x="648" y="312" width="180" height="52" rx="11" class="box"/>
+  <text x="738" y="334" class="bt">features.py</text>
+  <text x="738" y="351" class="bs">16 feats · point-in-time</text>
+
+  <rect x="406" y="312" width="172" height="52" rx="11" class="box"/>
+  <text x="492" y="334" class="bt">predictor.py</text>
+  <text x="492" y="351" class="bs">XGBoost + Platt</text>
+
+  <rect x="150" y="312" width="176" height="52" rx="11" class="box"/>
+  <text x="238" y="334" class="bt">models/</text>
+  <text x="238" y="351" class="bs">*.joblib · metrics.json</text>
+
+  <path class="edge" d="M648,338 L580,338" marker-end="url(#arrow)"/>
+  <path class="edge" d="M406,338 L328,338" marker-end="url(#arrow)"/>
+
+  <!-- band2 -> band3 -->
+  <path class="edge" d="M238,364 L238,482" marker-end="url(#arrow)"/>
+  <text x="246" y="427" class="elabel">load on boot</text>
+
+  <!-- ===== BAND 3: SERVE (left -> right) ===== -->
+  <rect x="150" y="482" width="200" height="54" rx="11" class="box"/>
+  <text x="250" y="505" class="bt">api.py · FastAPI</text>
+  <text x="250" y="522" class="bs">/predict · /teams · /metrics</text>
+
+  <rect x="560" y="482" width="268" height="54" rx="11" class="box" stroke="url(#accent)"/>
+  <text x="694" y="505" class="bt">Next.js 14 + R3F dashboard</text>
+  <text x="694" y="522" class="bs">gauge · SHAP · Elo board · 3D hero</text>
+
+  <path class="edge" d="M350,509 L558,509" marker-end="url(#arrow)"/>
+  <text x="454" y="501" class="elabel" text-anchor="middle">JSON · calibrated prob + SHAP</text>
+</svg>
