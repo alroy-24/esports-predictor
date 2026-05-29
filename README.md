@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎯 Frag Forecast
+<img src="assets/banner.svg" alt="Frag Forecast — calibrated win probabilities for professional Counter-Strike 2" width="100%" />
 
 ### _Calibrated win probabilities for professional Counter-Strike 2 — with a 3D dashboard that has no business being this nice._
 
@@ -26,14 +26,28 @@ Real teams. Real players. Real photos. Real matches. Honest metrics.
 
 ## 📸 Demo
 
-> _Screenshots live in [`frontend/public/screenshots/`](frontend/public/screenshots/)._
-> Run the stack (see [Quickstart](#-quickstart)), capture the three panels, and drop them in:
->
-> ```md
-> ![Matchup simulator — gauge + SHAP](frontend/public/screenshots/predict.png)
-> ![Player "tale of the tape"](frontend/public/screenshots/players.png)
-> ![Elo leaderboard + reliability diagram](frontend/public/screenshots/metrics.png)
-> ```
+<div align="center">
+
+**The matchup simulator** — searchable team pickers, live context toggles, an animated
+split probability gauge, and a per-prediction SHAP breakdown of *why* the model leans the way it does.
+
+![Matchup simulator — probability gauge + SHAP explanation](screenshots/matchup-simulator.png)
+
+</div>
+
+|                                         |                                         |
+| :-------------------------------------: | :-------------------------------------: |
+| ![Team-profile radar](screenshots/matchup-radar.png) | ![Player tale of the tape](screenshots/player-compare.png) |
+| **Team-profile radar** — Elo, form, freshness, win-rate, experience at a glance | **Player "tale of the tape"** — real photos, flags, and a head-to-head on real team context |
+| ![Elo leaderboard](screenshots/elo-leaderboard.png) | ![Recent results feed](screenshots/recent-results.png) |
+| **Elo leaderboard** — every team ranked, with logos and region tags | **Live results feed** — recent matches with scores, tiers, and recency |
+
+<details>
+<summary>🎬 The landing hero</summary>
+
+![Animated 3D hero — "Who wins the next CS2 match?"](screenshots/hero.png)
+
+</details>
 
 ---
 
@@ -60,6 +74,15 @@ Real teams. Real players. Real photos. Real matches. Honest metrics.
 > **Next.js + Three.js** dashboard with an animated 3D hero, a tug-of-war player
 > comparison with real photos, an Elo leaderboard, and a live reliability diagram.
 
+<div align="center">
+
+<img src="assets/architecture.svg" alt="Frag Forecast architecture — INGEST (PandaScore/synthetic → ingest.py → SQLite), TRAIN (features → XGBoost+Platt → models), SERVE (FastAPI → Next.js dashboard)" width="100%" />
+
+</div>
+
+<details>
+<summary>Text version</summary>
+
 ```text
   ───────────────────────────  ①  INGEST  ───────────────────────────
 
@@ -82,6 +105,8 @@ Real teams. Real players. Real photos. Real matches. Honest metrics.
                             · /teams /players /matches /metrics
                             · gauge · SHAP · Elo board · reliability · 3D hero 🪄
 ```
+
+</details>
 
 ---
 
