@@ -6,6 +6,12 @@
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/▶%20%20LIVE%20DEMO-frag--forecast.vercel.app-22d3ee?style=for-the-badge&labelColor=0a0a12)](https://frag-forecast.vercel.app)
+
+<sub>⚡ First load can take ~50s while the free backend wakes from sleep — then it's instant.</sub>
+
+<br/>
+
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![XGBoost](https://img.shields.io/badge/XGBoost-calibrated-FF6600)
@@ -18,7 +24,7 @@
 **Scrape → engineer → calibrate → serve → visualize → explain.**
 Real teams. Real players. Real photos. Real matches. Honest metrics.
 
-[**Quickstart**](#-quickstart) · [**API**](#-api-reference) · [**Why it's portfolio-worthy**](#-what-makes-it-portfolio-worthy) · [**Caveats**](#️-honest-caveats)
+[**Live Demo**](https://frag-forecast.vercel.app) · [**Quickstart**](#-quickstart) · [**API**](#-api-reference) · [**Why it's portfolio-worthy**](#-what-makes-it-portfolio-worthy) · [**Caveats**](#️-honest-caveats)
 
 </div>
 
@@ -323,10 +329,10 @@ canvas-confetti · sonner · Lenis · Radix UI · lucide-react
 - [x] FastAPI service + Next.js/Three.js dashboard
 - [x] Player comparison with real photos
 - [x] Map-margin feature → match/beat Elo on AUC
+- [x] Deploy — [API on Render](https://frag-forecast-api.onrender.com) + [dashboard on Vercel](https://frag-forecast.vercel.app)
 - [ ] Beat Elo on **log-loss** (opponent-adjusted form, Elo+model ensemble)
 - [ ] Backtest vs bookmaker odds (simulated ROI)
 - [ ] Per-team pages + roster galleries
-- [ ] Deploy (API + dashboard)
 
 ---
 
