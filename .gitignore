@@ -36,3 +36,10 @@ next-env.d.ts
 *.swp
 .DS_Store
 Thumbs.db
+
+# Deploy: ship the trained model + the metrics it serves and the real-data DB,
+# so the Render demo is self-contained (no token, no build-time ingest).
+# These override `models/`, `*.joblib`, and `data/*.db` above.
+!backend/models/
+!backend/models/xgb_calibrated.joblib
+!backend/models/metrics.json

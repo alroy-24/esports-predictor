@@ -11,14 +11,9 @@ with real photos, an Elo leaderboard, and a model-reliability panel.
 
 ## Screenshots
 
-> 📸 _Drop captures here once you've run the app._ Save images to
-> `frontend/public/screenshots/` and reference them, e.g.:
->
-> ```md
-> ![Matchup simulator](public/screenshots/predict.png)
-> ![Player tale of the tape](public/screenshots/players.png)
-> ![Elo leaderboard + reliability](public/screenshots/metrics.png)
-> ```
+See the **[Demo gallery in the root README](../README.md#-demo)** — the matchup
+simulator, team radar, player comparison, Elo leaderboard, and live results feed.
+Source images live in [`../screenshots/`](../screenshots/).
 
 ---
 

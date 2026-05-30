@@ -1,0 +1,17 @@
+# Keep the Docker build context small — the API image only needs backend/.
+.git/
+frontend/
+assets/
+screenshots/
+*.md
+backend/.venv/
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+backend/models/reliability.png
+backend/notebooks/
+data/

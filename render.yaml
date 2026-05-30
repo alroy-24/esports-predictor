@@ -1,0 +1,15 @@
+# Render Blueprint for the Frag Forecast API.
+# In Render: New ▸ Blueprint ▸ pick this repo. It builds the root Dockerfile.
+services:
+  - type: web
+    name: frag-forecast-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # No cookies/credentials are used, so "*" is safe for a public demo.
+      # Lock this to your Vercel URL later, e.g. https://frag-forecast.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: "*"
