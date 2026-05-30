@@ -1,6 +1,11 @@
 # Slim runtime deps for the deployed API (no Jupyter / plotting / scraping /
-# training extras). Used by the root Dockerfile. Keep in sync with the relevant
-# pins in requirements.txt.
+# training extras). Used by the root Dockerfile.
+#
+# IMPORTANT: scikit-learn is pinned to the exact version the model was pickled
+# with (1.8.0). An older sklearn fails to unpickle with
+# "ModuleNotFoundError: No module named 'sklearn.frozen'" (FrozenEstimator,
+# used by CalibratedClassifierCV, only exists in sklearn >= 1.6). The rest are
+# floored so pip resolves compatible recent builds.
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 pydantic==2.9.2
@@ -8,11 +13,11 @@ python-dotenv==1.0.1
 
 # Data + DB
 sqlalchemy==2.0.36
-pandas==2.2.3
-numpy==2.1.2
+pandas>=2.2
+numpy>=2.1
 
-# ML (serve-time: predict + SHAP)
-scikit-learn==1.5.2
-xgboost==2.1.2
-shap==0.46.0
-joblib==1.4.2
+# ML (serve-time: predict + SHAP) — keep sklearn in lockstep with the model
+scikit-learn==1.8.0
+xgboost>=2.1
+shap>=0.46
+joblib>=1.4
